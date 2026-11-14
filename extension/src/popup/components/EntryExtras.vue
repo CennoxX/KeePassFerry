@@ -75,7 +75,8 @@ export default {
         try {
             const r = await chrome.runtime.sendMessage({ keepassferry: "getEntryExtras", uuid: this.uuid, dbFileName: this.dbFileName });
             this.notes = (r?.notes ?? "").trim();
-            this.fields = r?.fields ?? [];
+            // Stringfelder, auf die ein Formularfeld verweist, stehen schon oben bei den Feldern zum Ausfüllen
+            this.fields = (r?.fields ?? []).filter((f: { linked?: boolean }) => !f.linked);
             this.attachments = r?.attachments ?? [];
         } catch (e) {
             // ohne Zusatzbereich

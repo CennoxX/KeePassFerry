@@ -176,45 +176,7 @@ namespace KeePassFerry.Forms
             if (_conf.Fields != null)
             {
                 foreach (Field field in _conf.Fields)
-                {
-                    string type = Utilities.FieldTypeToDisplay(field.Type, false);
-
-                    // Override display of standard variables 
-                    string value = field.Value ?? "";
-                    if (field.Type == FieldType.Password)
-                        value = "********";
-                    if (field.ValuePath == PwDefs.UserNameField)
-                    {
-                        value = TUserName;
-                    }
-                    if (field.ValuePath == PwDefs.PasswordField)
-                    {
-                        value = TPassword;
-                    }
-                    if (field.ValuePath != "." && field.ValuePath != PwDefs.UserNameField && field.ValuePath != PwDefs.PasswordField)
-                    {
-                        value = FerryText.T("Zeichenfolge: ", "String field: ") + field.ValuePath;
-                    }
-                    if (field.Type == FieldType.Toggle)
-                    {
-                        value = field.Value == "KEEPASSFERRY_CHECKED_TRUE" ? TEnabled : TDisabled;
-                    }
-                    
-                    // null checks shouldn't be necessary but seems to be bugs in Mono runtime sometimes relating to GetValueOrDefault so being over-cautious here
-                    var customFmc = field.MatcherConfigs != null ? field.MatcherConfigs.FirstOrDefault(fmc => fmc != null && (fmc.MatcherType == null || fmc.MatcherType.GetValueOrDefault(FieldMatcherType.Custom) == FieldMatcherType.Custom)) : null;
-                    string id = "";
-                    string name = "";
-                    if (customFmc != null)
-                    {
-                        var cmId = customFmc.CustomMatcher != null && customFmc.CustomMatcher.Ids != null ? customFmc.CustomMatcher.Ids.FirstOrDefault() : null;
-                        var cmName = customFmc.CustomMatcher != null && customFmc.CustomMatcher.Names != null ? customFmc.CustomMatcher.Names.FirstOrDefault() : null;
-                        if (cmId != null) id = cmId;
-                        if (cmName != null) name = cmName;
-                    }
-                    ListViewItem lvi = new ListViewItem(new[] { name, value, id, type, field.Page.ToString() });
-                    lvi.Tag = field;
-                    AddFieldListItem(lvi);
-                }
+                    AddFieldListItem(FieldListItem(field));
             }
 
             ReadURLStrings();
@@ -231,8 +193,15 @@ namespace KeePassFerry.Forms
             toolTipRealm.SetToolTip(textBoxRealm, realmTooltip);
             toolTipRealm.SetToolTip(labelRealm, realmTooltip);
             _loaded = true;
-            // Reiter wird (wieder) angezeigt: Im Reiter "Erweitert" können Adressfelder inzwischen geändert worden sein
-            VisibleChanged += delegate { if (Visible) RefreshAdditionalUrlsFromStrings(); };
+            // Reiter wird (wieder) angezeigt: Im Reiter "Erweitert" können Adressfelder und Stringfelder inzwischen
+            // geändert worden sein
+            VisibleChanged += delegate
+            {
+                if (!Visible) return;
+                RefreshAdditionalUrlsFromStrings();
+                RefreshFieldItems();
+            };
+            _pwEntryForm.EntrySaving += OnEntrySaving;
         }
 
         // Übersetzte Texte sind länger als die englischen Designer-Texte: Reiter "Allgemein" untereinander anordnen,
@@ -593,52 +562,13 @@ namespace KeePassFerry.Forms
         private void buttonFieldAdd_Click(object sender, EventArgs e)
         {
             IGuidService guidService = new GuidService();
-            using (FerryFieldForm kff = new FerryFieldForm(null, null, null, FieldType.Text, 1, PlaceholderHandling.Default, ".", false, null, null))
+            using (FerryFieldForm kff = new FerryFieldForm(null, null, null, FieldType.Text, 1, PlaceholderHandling.Default, ".", false, null, null, EntryStringNames()))
             {
                 if (kff.ShowDialog() == DialogResult.OK)
                 {
-                    var mc = FieldMatcherConfig.ForSingleClientMatch(kff.Id, kff.Name, kff.HtmlType, kff.QuerySelector);
                     var newUniqueId = Convert.ToBase64String(guidService.NewGuid().ToByteArray());
-                    var field = new Field
-                    {
-                        Name = newUniqueId,
-                        Page = Math.Max(kff.Page, 1),
-                        ValuePath = ".",
-                        Uuid = newUniqueId,
-                        Type = kff.Type,
-                        MatcherConfigs = new[] { mc },
-                        Value = !string.IsNullOrEmpty(kff.Value) ? kff.Value : null
-                    };
-                    if (kff.PlaceholderHandling == PlaceholderHandling.Default)
-                    {
-                        field.PlaceholderHandling = null;
-                    }
-                    else
-                    {
-                        field.PlaceholderHandling = kff.PlaceholderHandling;
-                    }
-
-                    string type = Utilities.FieldTypeToDisplay(kff.Type, false);
-                    int page = kff.Page;
-
-                    // We know any new passwords are not the main Entry password
-                    // Also know that the display name can be same as main name
-                    string displayValue = kff.Value;
-                    if (kff.Type == FieldType.Password)
-                    {
-                        displayValue = "********";
-                    }
-                    if (kff.Type == FieldType.Toggle)
-                    {
-                        displayValue = kff.Value == "KEEPASSFERRY_CHECKED_TRUE" ? TEnabled : TDisabled;
-                    }
-
-                    ListViewItem lvi = new ListViewItem(new[]
-                    {
-                        kff.Name, displayValue, kff.Id, type, page.ToString()
-                    });
-                    lvi.Tag = field;
-                    AddFieldListItem(lvi);
+                    Field field = FieldFromDialog(kff, newUniqueId);
+                    AddFieldListItem(FieldListItem(field));
                     UpdateFields();
                 }
             }
@@ -649,69 +579,137 @@ namespace KeePassFerry.Forms
             ListView.SelectedListViewItemCollection lvsicSel = listView2.SelectedItems;
 
             Field tag = (Field)lvsicSel[0].Tag;
-            using (FerryFieldForm kff = FormFieldForEditing(tag))
+            if (tag == null) throw new Exception("Corrupt Entry found!");
+            using (FerryFieldForm kff = FerryFieldForm.FromField(tag, EntryStringNames()))
             {
                 if (kff.ShowDialog() == DialogResult.OK)
                 {
-                    string displayValue = kff.Value;
-                    if (kff.Type == FieldType.Password)
-                    {
-                        displayValue = "********";
-                    }
-
-                    string displayName = string.IsNullOrEmpty(tag.Name) ? tag.Uuid : tag.Name;
-                    if (tag.ValuePath == PwDefs.PasswordField)
-                    {
-                        displayName = null;
-                        displayValue = TPassword;
-                    }
-                    else if (tag.ValuePath == PwDefs.UserNameField)
-                    {
-                        displayName = null;
-                        displayValue = TUserName;
-                    }
-
-                    if (kff.Type == FieldType.Toggle)
-                    {
-                        displayValue = kff.Value == "KEEPASSFERRY_CHECKED_TRUE" ? TEnabled : TDisabled;
-                    }
-
-                    string type = Utilities.FieldTypeToDisplay(kff.Type, false);
-                    int page = kff.Page;
-                    
-                    var mc = FieldMatcherConfig.ForSingleClientMatch(kff.Id, kff.Name, kff.HtmlType, kff.QuerySelector);
-                    var field = new Field
-                    {
-                        Name = displayName,
-                        Page = Math.Max(page, 1),
-                        ValuePath = tag.ValuePath,
-                        Uuid = tag.Uuid,
-                        Type = kff.Type,
-                        MatcherConfigs = new[] { mc },
-                        Value = !string.IsNullOrEmpty(kff.Value) ? kff.Value : null
-                    };
-                    if (kff.PlaceholderHandling == PlaceholderHandling.Default)
-                    {
-                        field.PlaceholderHandling = null;
-                    }
-                    else
-                    {
-                        field.PlaceholderHandling = kff.PlaceholderHandling;
-                    }
-
-                    ListViewItem lvi = new ListViewItem(new[] { kff.Name, displayValue, kff.Id, type, page.ToString() });
-                    lvi.Tag = field;
+                    Field field = FieldFromDialog(kff, string.IsNullOrEmpty(tag.Uuid) ? tag.Name : tag.Uuid, tag.Name);
                     RemoveFieldListItem(lvsicSel[0]);
-                    AddFieldListItem(lvi);
+                    AddFieldListItem(FieldListItem(field));
                     UpdateFields();
                 }
             }
         }
 
-        private static FerryFieldForm FormFieldForEditing(Field tag)
+        // Stringfelder des Eintrags, wie sie gerade im Dialog stehen (auch noch nicht gespeicherte), ohne reservierte
+        private List<string> EntryStringNames()
         {
-            if (tag == null) throw new Exception("Corrupt Entry found!");
-            return FerryFieldForm.FromField(tag);
+            _pwEntryForm.UpdateEntryStrings(true, false);
+            return _strings.GetKeys().Where(k => !FerryService.IsReservedStringName(k)).ToList();
+        }
+
+        // Formularfeld aus dem Dialog; ein neues Stringfeld kommt in den Eintrag (Reiter "Erweitert"), im Feld bleibt
+        // nur der Verweis darauf. Angezeigter Name wie bei Feldern aus der Erweiterung: Benutzername und Passwort ohne
+        // eigenen Namen, Stringfelder mit ihrem Namen, alte Felder mit eigenem Wert behalten ihren bisherigen Namen
+        private Field FieldFromDialog(FerryFieldForm kff, string uuid, string previousName = null)
+        {
+            if (kff.NewStringName != null)
+            {
+                _pwEntryForm.UpdateEntryStrings(true, false);
+                _strings.Set(kff.NewStringName, new KeePassLib.Security.ProtectedString(kff.Type == FieldType.Password, kff.Value ?? ""));
+                _pwEntryForm.UpdateEntryStrings(false, false);
+            }
+            bool standard = kff.ValuePath == PwDefs.UserNameField || kff.ValuePath == PwDefs.PasswordField;
+            string displayName = standard ? null
+                : kff.ValuePath != "." ? kff.ValuePath
+                : !string.IsNullOrEmpty(previousName) ? previousName
+                : !string.IsNullOrEmpty(kff.Name) ? kff.Name : uuid;
+            return new Field
+            {
+                Name = displayName,
+                Page = Math.Max(kff.Page, 1),
+                ValuePath = kff.ValuePath,
+                Uuid = uuid,
+                Type = kff.Type,
+                MatcherConfigs = new[] { FieldMatcherConfig.ForSingleClientMatch(kff.Id, kff.Name, kff.HtmlType, kff.QuerySelector) },
+                Value = kff.ValuePath == "." && !string.IsNullOrEmpty(kff.Value) ? kff.Value : null,
+                PlaceholderHandling = kff.PlaceholderHandling == PlaceholderHandling.Default ? (PlaceholderHandling?)null : kff.PlaceholderHandling
+            };
+        }
+
+        // Zeile der Liste "Formularfelder": Name, Wert (Herkunft), ID, DOM-Typ
+        private ListViewItem FieldListItem(Field field)
+        {
+            var lvi = new ListViewItem(new[] { "", "", "", "" });
+            lvi.Tag = field;
+            ApplyFieldItem(lvi, field);
+            return lvi;
+        }
+
+        private void ApplyFieldItem(ListViewItem lvi, Field field)
+        {
+            // null checks shouldn't be necessary but seems to be bugs in Mono runtime sometimes relating to GetValueOrDefault so being over-cautious here
+            var customFmc = field.MatcherConfigs != null ? field.MatcherConfigs.FirstOrDefault(fmc => fmc != null && (fmc.MatcherType == null || fmc.MatcherType.GetValueOrDefault(FieldMatcherType.Custom) == FieldMatcherType.Custom)) : null;
+            var cm = customFmc != null ? customFmc.CustomMatcher : null;
+            string id = cm != null && cm.Ids != null ? cm.Ids.FirstOrDefault() ?? "" : "";
+            string name = cm != null && cm.Names != null ? cm.Names.FirstOrDefault() ?? "" : "";
+            string domType = cm != null && cm.Types != null ? cm.Types.FirstOrDefault() ?? "" : "";
+            bool missing = IsMissingString(field);
+
+            lvi.SubItems[0].Text = name;
+            lvi.SubItems[1].Text = DisplayValue(field) + (missing ? FerryText.T(" (fehlt)", " (missing)") : "");
+            lvi.SubItems[2].Text = id;
+            lvi.SubItems[3].Text = domType;
+            lvi.ForeColor = missing ? Color.Firebrick : SystemColors.WindowText;
+            lvi.ToolTipText = missing
+                ? FerryText.T("Das Stringfeld „" + field.ValuePath + "“ gibt es im Eintrag nicht mehr. Bearbeiten und unter „Wert aus“ neu wählen oder das Formularfeld löschen.",
+                    "The string field \"" + field.ValuePath + "\" no longer exists in the entry. Edit and choose again under \"Value from\" or delete the form field.")
+                : lvi.SubItems[1].Text;
+        }
+
+        // Verweis auf ein Stringfeld, das im Eintrag (Stand im Dialog) nicht mehr existiert
+        private bool IsMissingString(Field field)
+        {
+            if (string.IsNullOrEmpty(field.ValuePath) || field.ValuePath == "." || PwDefs.IsStandardField(field.ValuePath)) return false;
+            return !_strings.Exists(field.ValuePath);
+        }
+
+        private void RefreshFieldItems()
+        {
+            _pwEntryForm.UpdateEntryStrings(true, false);
+            foreach (ListViewItem lvi in listView2.Items)
+                if (lvi.Tag is Field) ApplyFieldItem(lvi, (Field)lvi.Tag);
+        }
+
+        // Beim Speichern des Eintrags: Formularfelder ohne ihr Stringfeld entfernen, behalten oder zurück zum Eintrag
+        private void OnEntrySaving(object sender, KeePass.Util.CancellableOperationEventArgs e)
+        {
+            if (!_loaded) return;
+            _pwEntryForm.UpdateEntryStrings(true, false);
+            var missing = listView2.Items.Cast<ListViewItem>().Where(l => l.Tag is Field && IsMissingString((Field)l.Tag)).ToList();
+            if (missing.Count == 0) return;
+
+            string list = string.Join(Environment.NewLine, missing.Select(l => "• " + l.SubItems[0].Text + " → " + ((Field)l.Tag).ValuePath).ToArray());
+            DialogResult r = MessageBox.Show(_pwEntryForm,
+                FerryText.T("Diese Formularfelder verweisen auf Stringfelder, die es im Eintrag nicht mehr gibt:",
+                    "These form fields refer to string fields that no longer exist in the entry:") + Environment.NewLine + Environment.NewLine + list +
+                Environment.NewLine + Environment.NewLine +
+                FerryText.T("Formularfelder entfernen?\n\nJa: entfernen. Nein: behalten (sie bleiben beim Ausfüllen leer). Abbrechen: zurück zum Eintrag.",
+                    "Remove these form fields?\n\nYes: remove. No: keep (they stay empty when filling). Cancel: back to the entry."),
+                "KeePassFerry", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+            if (r == DialogResult.Cancel)
+            {
+                e.Cancel = true;
+                return;
+            }
+            if (r == DialogResult.Yes)
+            {
+                foreach (ListViewItem lvi in missing) RemoveFieldListItem(lvi);
+                UpdateFields();
+            }
+        }
+
+        // Spalte "Wert": Herkunft des Werts, eigene Passwörter verdeckt
+        private static string DisplayValue(Field field)
+        {
+            if (field.Type == FieldType.Toggle)
+                return field.Value == "KEEPASSFERRY_CHECKED_TRUE" ? TEnabled : TDisabled;
+            if (field.ValuePath == PwDefs.UserNameField) return TUserName;
+            if (field.ValuePath == PwDefs.PasswordField) return TPassword;
+            if (!string.IsNullOrEmpty(field.ValuePath) && field.ValuePath != ".")
+                return FerryText.T("Stringfeld: ", "String field: ") + field.ValuePath;
+            return field.Type == FieldType.Password ? "********" : field.Value ?? "";
         }
 
         private void buttonFieldDelete_Click(object sender, EventArgs e)

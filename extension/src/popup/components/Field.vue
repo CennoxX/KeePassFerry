@@ -5,7 +5,13 @@
             <tabler-user v-else-if="kind === 'username'" class="ferry-ico" />
             <tabler-text-caption v-else class="ferry-ico" />
         </span>
-        <span class="ferry-row-value" :class="{ secret: field.type === 'password' && !revealed }">
+        <!-- Eigene Felder (z. B. aus einem Stringfeld) mit Namen darüber, wie unter "Im Eintrag gespeichert" -->
+        <span v-if="label" class="ferry-row-value ferry-row-labelled">
+            <span class="ferry-row-label">{{ label }}</span>
+            <span class="ferry-row-sub" :class="{ secret: field.type === 'password' && !revealed }">{{ displayValue }}</span>
+            <v-tooltip location="bottom" activator="parent">{{ tooltip }}</v-tooltip>
+        </span>
+        <span v-else class="ferry-row-value" :class="{ secret: field.type === 'password' && !revealed }">
             {{ displayValue }}
             <v-tooltip location="bottom" activator="parent">{{ tooltip }}</v-tooltip>
         </span>
@@ -51,6 +57,13 @@ export default {
         },
         tooltip: function () {
             return Field.getDisplayTooltip(this.field, this.revealed);
+        },
+        // Name eigener Felder; nicht bei Benutzername/Passwort und nicht bei internen Kennungen alter Felder
+        label: function (): string {
+            const name: string = this.field.name ?? "";
+            if (!name || name === "KeePass username" || name === "KeePass password" || this.kind === "username") return "";
+            if (/^[A-Za-z0-9+/]{22}==$/.test(name)) return "";
+            return name;
         },
         useful: function () {
             // Häkchen-Felder ("boolean", z. B. "Angemeldet bleiben") sind nur fürs Ausfüllen da, nicht zum Anzeigen
@@ -109,6 +122,25 @@ export default {
     text-overflow: ellipsis;
 }
 .ferry-row-value.secret {
+    letter-spacing: 0.08em;
+}
+.ferry-row-labelled {
+    display: flex;
+    flex-direction: column;
+    padding: 4px 0;
+}
+.ferry-row-label {
+    font-size: 13px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.ferry-row-sub {
+    font-size: 12px;
+    color: var(--ferry-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.ferry-row-sub.secret {
     letter-spacing: 0.08em;
 }
 </style>

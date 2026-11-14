@@ -46,7 +46,6 @@ namespace KeePassFerry.Forms
             this.columnHeaderFValue = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeaderFId = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeaderFType = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeaderFPage = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.buttonFieldAdd = new System.Windows.Forms.Button();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.buttonURLEdit = new System.Windows.Forms.Button();
@@ -187,8 +186,7 @@ namespace KeePassFerry.Forms
             this.columnHeaderFName,
             this.columnHeaderFValue,
             this.columnHeaderFId,
-            this.columnHeaderFType,
-            this.columnHeaderFPage});
+            this.columnHeaderFType});
             this.listView2.FullRowSelect = true;
             this.listView2.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
             this.listView2.HideSelection = false;
@@ -221,11 +219,7 @@ namespace KeePassFerry.Forms
             // 
             // columnHeaderFType
             // 
-            this.columnHeaderFType.Text = "Type";
-            // 
-            // columnHeaderFPage
-            // 
-            this.columnHeaderFPage.Text = "Page";
+            this.columnHeaderFType.Text = "DOM type";
             // 
             // buttonFieldAdd
             // 
@@ -505,7 +499,6 @@ namespace KeePassFerry.Forms
         private ColumnHeader columnHeaderFValue;
         private ColumnHeader columnHeaderFId;
         private ColumnHeader columnHeaderFType;
-        private ColumnHeader columnHeaderFPage;
         private TabControl tabControl1;
         private TabPage tabPage1;
         private TabPage tabPage2;

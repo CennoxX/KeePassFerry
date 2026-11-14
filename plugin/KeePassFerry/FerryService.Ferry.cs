@@ -157,6 +157,13 @@ namespace KeePassFerry
             PwEntry entry = FindFerryEntry(uuid, dbFileName, out db);
             if (entry == null) return null;
 
+            // Stringfelder, auf die ein Formularfeld verweist: Die Erweiterung zeigt sie schon bei den Feldern zum Ausfüllen
+            var linked = new System.Collections.Generic.HashSet<string>();
+            EntryConfigv2 conf = entry.GetFerryConfigNormalised(MatchAccuracySettings.Default);
+            if (conf != null && conf.Fields != null)
+                foreach (Field f in conf.Fields)
+                    if (f != null && !string.IsNullOrEmpty(f.ValuePath) && f.ValuePath != ".") linked.Add(f.ValuePath);
+
             var fields = new System.Collections.Generic.List<EntryExtraField>();
             foreach (var kv in entry.Strings)
             {
@@ -165,7 +172,8 @@ namespace KeePassFerry
                 {
                     name = kv.Key,
                     isProtected = kv.Value.IsProtected,
-                    value = kv.Value.IsProtected ? null : kv.Value.ReadString()
+                    value = kv.Value.IsProtected ? null : kv.Value.ReadString(),
+                    linked = linked.Contains(kv.Key)
                 });
             }
             var attachments = new System.Collections.Generic.List<EntryExtraAttachment>();
@@ -552,7 +560,7 @@ namespace KeePassFerry
             return name.Length == 0 ? "Notiz" : name;
         }
 
-        private static bool IsReservedStringName(string name)
+        internal static bool IsReservedStringName(string name)
         {
             return PwDefs.IsStandardField(name)
                 || name.Equals(Totp.OtpField, StringComparison.OrdinalIgnoreCase)
@@ -996,6 +1004,8 @@ namespace KeePassFerry
         public string name;
         public bool isProtected;
         public string value;
+        // Ein Formularfeld des Eintrags verweist auf dieses Stringfeld
+        public bool linked;
     }
 
     public class EntryExtraAttachment

@@ -198,7 +198,7 @@ folgt dem Browser, das Plugin der Sprache von KeePass.
   ihn: Benutzername, Passwort, Einmalcode oder eigene KeePass-Felder wie PIN oder Kundennummer.
 - **Speichern ohne Ballast.** Ein neuer Eintrag übernimmt nur Benutzername und Passwort, nicht Anschrift oder
   Häkchen einer Registrierung. Braucht eine Seite wirklich ein weiteres Feld: Rechtsklick hinein → **KeePassFerry →
-  Dieses Feld zum Eintrag hinzufügen**. Es liegt dann als Zeichenfolge im KeePass-Eintrag, bekommt das Symbol und wird künftig mit
+  Dieses Feld zum Eintrag hinzufügen**. Es liegt dann als Stringfeld im KeePass-Eintrag, bekommt das Symbol und wird künftig mit
   ausgefüllt.
 - **Geänderte Passwörter.** Nach einer erfolgreichen Anmeldung mit neuem Passwort bietet KeePassFerry an, den
   vorhandenen Eintrag zu aktualisieren. Das alte Passwort bleibt in der Chronik des Eintrags erhalten.

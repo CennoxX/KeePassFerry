@@ -2121,7 +2121,7 @@
         "description": "KeePassFerry"
     },
     "ferry_news_1_0_25_1_text": {
-        "message": "Felder aus „Dieses Feld zum Eintrag hinzufügen“ stehen unter Erweitert → Zeichenfolgen. Passwortfelder sind geschützt, und alles bleibt auch ohne KeePassFerry nutzbar.",
+        "message": "Felder aus „Dieses Feld zum Eintrag hinzufügen“ stehen unter Erweitert → Stringfelder. Passwortfelder sind geschützt, und alles bleibt auch ohne KeePassFerry nutzbar.",
         "description": "KeePassFerry"
     },
     "ferry_news_1_0_25_2_title": {
@@ -2177,7 +2177,7 @@
         "description": "KeePassFerry"
     },
     "ferry_news_1_0_21_1_text": {
-        "message": "Im Knopf ⋯ der Liste am Feld stehen jetzt auch die Felder, die du in KeePass selbst angelegt hast (Erweitert → Zeichenfolgen, z. B. PIN oder Kundennummer). Ein Klick trägt sie ins Feld ein, ⧉ kopiert sie.",
+        "message": "Im Knopf ⋯ der Liste am Feld stehen jetzt auch die Felder, die du in KeePass selbst angelegt hast (Erweitert → Stringfelder, z. B. PIN oder Kundennummer). Ein Klick trägt sie ins Feld ein, ⧉ kopiert sie.",
         "description": "KeePassFerry"
     },
     "ferry_news_1_0_21_2_title": {
