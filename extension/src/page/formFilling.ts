@@ -1,4 +1,5 @@
 import { Action } from "../common/Action";
+import type { AddonMessage } from "../common/AddonMessage";
 import { findLoginFields } from "./loginFields";
 import { FilledField } from "./FilledField";
 import { PanelStub, PanelStubOptions } from "./PanelStub";
@@ -65,6 +66,27 @@ export class FormFilling {
 
     private semanticWhitelistCache;
     private semanticBlacklistCache;
+
+    // IDs und Namen der Felder, die Einträge dieser Seite ausfüllen (#47); undefined: noch nicht abgefragt
+    private fieldHints: { ids: Set<string>; names: Set<string> } = undefined;
+    private fieldHintsRequested = false;
+
+    public setFieldHints(hints: { ids: string[]; names: string[] }) {
+        this.fieldHints = { ids: new Set(hints.ids ?? []), names: new Set(hints.names ?? []) };
+        // Gibt es solche Felder, die Formulare ohne Passwortfeld noch einmal ansehen
+        if (this.fieldHints.ids.size + this.fieldHints.names.size > 0 && this.formFinderTimer === null) {
+            this.formFinderTimer = window.setTimeout(() => this.findMatchesInThisFrame(), 0);
+        }
+    }
+
+    // Index des ersten Felds, das ein Eintrag dieser Seite ausfüllt, sonst -1
+    private fieldHintIndex(fields: MatchedField[]): number {
+        if (!this.fieldHints || !fields) return -1;
+        return fields.findIndex(f => {
+            const locator = f?.field?.locators?.[0];
+            return (!!locator?.id && this.fieldHints.ids.has(locator.id)) || (!!locator?.name && this.fieldHints.names.has(locator.name));
+        });
+    }
 
     constructor(
         private store: NonReactiveStore,
@@ -447,7 +469,8 @@ export class FormFilling {
         dataFields: Field[],
         currentPage,
         scoreConfig: FieldMatchScoreConfig,
-        automated: boolean
+        automated: boolean,
+        locatorOnly = false
     ) {
         this.Logger.debug("_fillManyFormFields started");
 
@@ -473,8 +496,10 @@ export class FormFilling {
 
         for (let i = 0; i < formFields.length; i++) {
             for (let j = 0; j < dataFields.length; j++) {
-                // Das erste Feld ist Benutzername bzw. Passwort; Zusatzfelder nur in ihr eigenes Eingabefeld (fieldLocators.ts)
-                const allowed = j === 0 || sameFieldTarget(formFields[i].field.locators[0], dataFields[j].locators[0]);
+                // Das erste Feld ist Benutzername bzw. Passwort; Zusatzfelder nur in ihr eigenes Eingabefeld (fieldLocators.ts).
+                // Formulare ohne Passwortfeld (#47): auch Benutzername/Passwort nur in ihr eigenes Feld, sonst landet z. B.
+                // der Benutzername in einem anderen Textfeld des Formulars
+                const allowed = (j === 0 && !locatorOnly) || sameFieldTarget(formFields[i].field.locators[0], dataFields[j].locators[0]);
                 const score = allowed
                     ? this.calculateFieldMatchScore(formFields[i], dataFields[j], currentPage, scoreConfig)
                     : 0;
@@ -505,6 +530,7 @@ export class FormFilling {
         this.matchResult.UUID = "";
         this.matchResult.previousUsernameUnknown = false;
         this.matchResult.entries = [];
+        this.matchResult.locatorOnlyForms = [];
         this.matchResult.mostRelevantFormIndex = null;
 
         this.matchResult.mustAutoFillForm = false;
@@ -602,6 +628,7 @@ export class FormFilling {
         this.Logger.debug("findMatches processing " + forms.length + " forms");
 
         let searchSentToKeePass = false;
+        let needFieldHints = false;
         // Sichtbare Anmeldefelder (versteckte Formulare, z. B. in einem zugeklappten "Anmelden"-Menü, zählen nicht)
         let anyVisibleLoginField = false;
 
@@ -661,7 +688,14 @@ export class FormFilling {
                 !noOtherField &&
                 otherFields[usernameIndex].field.locators[0].autocompleteValues?.includes("username");
 
-            if (noPasswordField && (noOtherField || (interestingForm !== true && !usernameAutocomplete))) {
+            // Ohne Passwortfeld trotzdem ausfüllen, wenn ein Feld zu einem Feld eines Eintrags dieser Seite passt (#47)
+            let hintedIndex = -1;
+            if (noPasswordField && interestingForm !== true && !usernameAutocomplete && otherFields?.length > 0) {
+                hintedIndex = this.fieldHintIndex(otherFields);
+                if (this.fieldHints === undefined) needFieldHints = true;
+            }
+
+            if (noPasswordField && hintedIndex < 0 && (noOtherField || (interestingForm !== true && !usernameAutocomplete))) {
                 this.Logger.debug(
                     "No password field found in this form and either there are no other" +
                         " fields or no whitelisted or autocomplete=username text field or form element"
@@ -671,7 +705,7 @@ export class FormFilling {
 
             let submitTargetNeighbour: HTMLElement;
             if (noPasswordField) {
-                submitTargetNeighbour = otherFields[usernameIndex].DOMelement;
+                submitTargetNeighbour = otherFields[noOtherField ? hintedIndex : usernameIndex].DOMelement;
             } else {
                 submitTargetNeighbour = passwordFields[0].DOMelement;
             }
@@ -682,6 +716,8 @@ export class FormFilling {
             this.matchResult.usernameIndexArray[i] = usernameIndex;
             this.matchResult.passwordFieldsArray[i] = passwordFields;
             this.matchResult.otherFieldsArray[i] = otherFields;
+            if (!this.matchResult.locatorOnlyForms) this.matchResult.locatorOnlyForms = [];
+            this.matchResult.locatorOnlyForms[i] = hintedIndex >= 0;
             this.matchResult.submitTargets[i] = submitTargetNeighbour;
 
             // The entries returned from KeePass for every form will be identical (based on tab/frame URL)
@@ -702,6 +738,15 @@ export class FormFilling {
         // Search for matching entries for the relevant URL. This request is asynchronous.
         // Nach der Schleife, damit die Sichtbarkeit aller Formulare bekannt ist
         if (searchSentToKeePass) this.matchFinder(url.href, anyVisibleLoginField);
+        // Formulare ohne Passwortfeld: einmal pro Seite nachfragen, welche Felder Einträge dieser Seite ausfüllen
+        if (needFieldHints && !this.fieldHintsRequested) {
+            this.fieldHintsRequested = true;
+            try {
+                this.myPort.postMessage({ fieldHints: { uri: url.href } } as AddonMessage);
+            } catch (e) {
+                // Verbindung zur Erweiterung gerade weg
+            }
+        }
     }
 
     // It's OK for this to take a few seconds - humans can't type that fast.
@@ -1258,19 +1303,22 @@ export class FormFilling {
                         punishWrongIDAndName:
                             features.indexOf("KEEPASSFERRY_FIELD_DEFAULT_NAME_AND_ID_EMPTY") >= 0
                     };
+                    const locatorOnly = !!matchResult.locatorOnlyForms?.[matchResult.mostRelevantFormIndex];
                     const lastFilledOther = this.fillManyFormFields(
                         otherFields,
                         matchingLogin.fields.filter(f => f.type !== "password"),
                         -1,
                         scoreConfig,
-                        automated
+                        automated,
+                        locatorOnly
                     );
                     const lastFilledPasswords = this.fillManyFormFields(
                         passwordFields,
                         matchingLogin.fields.filter(f => f.type === "password"),
                         -1,
                         scoreConfig,
-                        automated
+                        automated,
+                        locatorOnly
                     );
                     matchResult.formReadyForSubmit = true;
                     matchResult.lastFilledPasswords = lastFilledPasswords;

@@ -30,6 +30,9 @@ export interface AddonMessage {
     // visible: mindestens ein Anmeldefeld ist zu sehen (nur für das Diagnoseprotokoll)
     findMatches?: { uri?: string; uuid?: string; DBfilename?: string; visible?: boolean };
     findMatchesResult?: Entry[];
+    // Formulare ohne Passwortfeld: IDs und Namen der Felder, die Einträge dieser Seite ausfüllen (#47)
+    fieldHints?: { uri: string };
+    fieldHintsResult?: { ids: string[]; names: string[] };
     entries?: Entry[];
     action?: Action;
     selectedEntryIndex?: number;

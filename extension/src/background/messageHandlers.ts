@@ -261,6 +261,39 @@ function dropSupersededSubmission(tabId: number, url: string, username: string) 
     if (supersedesSubmission(previous, { url, username })) removeSubmission(tabId, item);
 }
 
+// IDs und Namen der Felder, die Einträge dieser Adresse ausfüllen: Ein Formular ohne Passwortfeld mit einem solchen
+// Feld füllt die Seite aus wie ein Anmeldeformular, ohne Positivliste (#47, wie Bitwarden). Nur bei entsperrter
+// Datenbank; kurz zwischengespeichert, damit nicht jede Seite KeePass fragt
+// Gilt nur für denselben Datenbankstand (nach jeder Änderung liefert KeePass eine neue Liste der Datenbanken)
+const fieldHintCache = new Map<string, { at: number; dbs: unknown; hints: { ids: string[]; names: string[] } }>();
+async function entryFieldHints(uri: string): Promise<{ ids: string[]; names: string[] }> {
+    const empty = { ids: [], names: [] };
+    if (!uri || !ferry.store.state.connected || ferry.store.state.KeePassDatabases.length === 0) return empty;
+    let key: string;
+    try {
+        key = new URL(uri).origin;
+    } catch (e) {
+        return empty;
+    }
+    const dbs = ferry.store.state.KeePassDatabases;
+    const cached = fieldHintCache.get(key);
+    if (cached && cached.dbs === dbs && cached.at > Date.now() - 60 * 1000) return cached.hints;
+    const entries = (await ferry.findLogins(uri, null, null, null, null, null).catch(() => null)) ?? [];
+    const ids = new Set<string>();
+    const names = new Set<string>();
+    for (const entry of entries) {
+        for (const field of entry.fields ?? []) {
+            const locator = field.locators?.[0];
+            if (locator?.id) ids.add(locator.id);
+            if (locator?.name) names.add(locator.name);
+        }
+    }
+    const hints = { ids: [...ids], names: [...names] };
+    fieldHintCache.set(key, { at: Date.now(), dbs, hints });
+    diag("hintergrund", "feldhinweise fuer formulare ohne passwort", { felder: ids.size + names.size });
+    return hints;
+}
+
 // Website-Symbol des Tabs, wenn die Seite zur Website des Eintrags gehört und Symbole gespeichert werden sollen
 async function sameSiteFavicon(tabId: number, entryUrl: string): Promise<string> {
     if (!configManager.current.saveFavicons) return null;
@@ -335,6 +368,10 @@ export async function pageMessageHandler(this: chrome.runtime.Port, msg: AddonMe
 
     if (msg.mutation) {
         ferry.store.onRemoteMessage(this, msg.mutation);
+    }
+
+    if (msg.fieldHints) {
+        this.postMessage({ fieldHintsResult: await entryFieldHints(msg.fieldHints.uri) } as AddonMessage);
     }
 
     if (msg.findMatches) {

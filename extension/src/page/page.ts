@@ -333,6 +333,10 @@ if (document.body) {
                 formFilling.findLoginsResultHandler(m.findMatchesResult, m.preferredUuid, m.previousUsernameUnknown);
             }
 
+            if (m.fieldHintsResult) {
+                formFilling.setFieldHints(m.fieldHintsResult);
+            }
+
             if (m.action == Action.ManualFill && m.selectedEntryIndex != null) {
                 formFilling.closeMatchedLoginsPanel();
                 formFilling.fillAndSubmit(false, null, m.selectedEntryIndex);

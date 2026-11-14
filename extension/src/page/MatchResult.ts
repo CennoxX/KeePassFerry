@@ -8,6 +8,8 @@ export class MatchResult {
     usernameIndexArray: number[];
     passwordFieldsArray: MatchedField[][];
     otherFieldsArray: MatchedField[][];
+    // Formular nur wegen eines Eintragsfelds beachtet (kein Passwortfeld, #47): nur Felder mit passender ID/Name füllen
+    locatorOnlyForms?: boolean[];
     currentPage: number;
     allMatchingLogins: any[];
     formRelevanceScores: number[];

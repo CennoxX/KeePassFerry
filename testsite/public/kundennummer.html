@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <link rel="icon" href="favicon.png" type="image/png">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Kundennummer – Spielwiese</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="kopf">
+        <a class="marke" href="index.html">Spielwiese</a>
+        <nav>
+            <a href="index.html">Übersicht</a>
+            <a href="login.html">Anmelden</a>
+            <a href="registrieren.html">Registrieren</a>
+            <a href="konto.html">Kundenkonto</a>
+        </nav>
+        <span id="angemeldet" class="status"></span>
+    </header>
+    <p class="warnung">Nur zum Testen auf diesem Rechner – hier keine echten Zugangsdaten eingeben.</p>
+    <main>
+        <!-- #47: Formular ohne Passwortfeld und ohne Benutzernamen-Feld. KeePassFerry füllt es nur aus, wenn ein Eintrag
+             dieser Seite ein Formularfeld mit der ID "kdnr" oder dem Namen "kundennummer" hat -->
+        <section class="karte">
+            <h1>Bestellung abrufen</h1>
+            <form action="konto.html" method="get">
+                <label for="kdnr">Kundennummer</label>
+                <input type="text" id="kdnr" name="kundennummer" inputmode="numeric">
+                <label for="plz">Postleitzahl</label>
+                <input type="text" id="plz" name="plz" inputmode="numeric">
+                <div><button type="submit">Abrufen</button></div>
+            </form>
+        </section>
+    </main>
+    <script src="spielwiese.js"></script>
+</body>
+</html>

@@ -139,66 +139,6 @@ function formFindingControlGroupChange(e: Event) {
     const siteConfig = globalSiteConfig();
 
     switch (targetInput.id) {
-        case "sssWhiteFormName":
-            if (
-                siteConfig.whiteList &&
-                siteConfig.whiteList.form &&
-                siteConfig.whiteList.form.names
-            ) {
-                delete siteConfig.whiteList.form.names;
-                if (!siteConfig.whiteList.form.ids) {
-                    delete siteConfig.whiteList.form;
-                    if (!siteConfig.whiteList.fields && !siteConfig.whiteList.querySelectors) {
-                        delete siteConfig.whiteList;
-                    }
-                }
-            }
-            break;
-        case "sssWhiteFormId":
-            if (
-                siteConfig.whiteList &&
-                siteConfig.whiteList.form &&
-                siteConfig.whiteList.form.ids
-            ) {
-                delete siteConfig.whiteList.form.ids;
-                if (!siteConfig.whiteList.form.names) {
-                    delete siteConfig.whiteList.form;
-                    if (!siteConfig.whiteList.fields && !siteConfig.whiteList.querySelectors) {
-                        delete siteConfig.whiteList;
-                    }
-                }
-            }
-            break;
-        case "sssWhiteFieldName":
-            if (
-                siteConfig.whiteList &&
-                siteConfig.whiteList.fields &&
-                siteConfig.whiteList.fields.names
-            ) {
-                delete siteConfig.whiteList.fields.names;
-                if (!siteConfig.whiteList.fields.ids) {
-                    delete siteConfig.whiteList.fields;
-                    if (!siteConfig.whiteList.fields && !siteConfig.whiteList.querySelectors) {
-                        delete siteConfig.whiteList;
-                    }
-                }
-            }
-            break;
-        case "sssWhiteFieldId":
-            if (
-                siteConfig.whiteList &&
-                siteConfig.whiteList.fields &&
-                siteConfig.whiteList.fields.ids
-            ) {
-                delete siteConfig.whiteList.fields.ids;
-                if (!siteConfig.whiteList.fields.names) {
-                    delete siteConfig.whiteList.fields;
-                    if (!siteConfig.whiteList.fields && !siteConfig.whiteList.querySelectors) {
-                        delete siteConfig.whiteList;
-                    }
-                }
-            }
-            break;
         case "sssBlackFormName":
             if (
                 siteConfig.blackList &&
@@ -270,26 +210,6 @@ function changeSiteConfigFormFindingItem(e: Event, targetInput?: HTMLInputElemen
     const siteConfig = globalSiteConfig();
 
     switch (targetInput.id) {
-        case "sssWhiteFormName":
-            if (!siteConfig.whiteList) siteConfig.whiteList = {};
-            if (!siteConfig.whiteList.form) siteConfig.whiteList.form = {};
-            siteConfig.whiteList.form.names = values.filter(v => v.length > 0);
-            break;
-        case "sssWhiteFormId":
-            if (!siteConfig.whiteList) siteConfig.whiteList = {};
-            if (!siteConfig.whiteList.form) siteConfig.whiteList.form = {};
-            siteConfig.whiteList.form.ids = values.filter(v => v.length > 0);
-            break;
-        case "sssWhiteFieldName":
-            if (!siteConfig.whiteList) siteConfig.whiteList = {};
-            if (!siteConfig.whiteList.fields) siteConfig.whiteList.fields = {};
-            siteConfig.whiteList.fields.names = values.filter(v => v.length > 0);
-            break;
-        case "sssWhiteFieldId":
-            if (!siteConfig.whiteList) siteConfig.whiteList = {};
-            if (!siteConfig.whiteList.fields) siteConfig.whiteList.fields = {};
-            siteConfig.whiteList.fields.ids = values.filter(v => v.length > 0);
-            break;
         case "sssBlackFormName":
             if (!siteConfig.blackList) siteConfig.blackList = {};
             if (!siteConfig.blackList.form) siteConfig.blackList.form = {};
@@ -331,42 +251,6 @@ function setSiteSpecificConfigValues() {
 
     let enabled: boolean;
 
-    enabled =
-        siteConfig.whiteList && siteConfig.whiteList.form && siteConfig.whiteList.form.names
-            ? true
-            : false;
-    setupFormFindingSetting(
-        "sssWhiteFormName",
-        enabled,
-        enabled ? siteConfig.whiteList.form.names : []
-    );
-    enabled =
-        siteConfig.whiteList && siteConfig.whiteList.form && siteConfig.whiteList.form.ids
-            ? true
-            : false;
-    setupFormFindingSetting(
-        "sssWhiteFormId",
-        enabled,
-        enabled ? siteConfig.whiteList.form.ids : []
-    );
-    enabled =
-        siteConfig.whiteList && siteConfig.whiteList.fields && siteConfig.whiteList.fields.names
-            ? true
-            : false;
-    setupFormFindingSetting(
-        "sssWhiteFieldName",
-        enabled,
-        enabled ? siteConfig.whiteList.fields.names : []
-    );
-    enabled =
-        siteConfig.whiteList && siteConfig.whiteList.fields && siteConfig.whiteList.fields.ids
-            ? true
-            : false;
-    setupFormFindingSetting(
-        "sssWhiteFieldId",
-        enabled,
-        enabled ? siteConfig.whiteList.fields.ids : []
-    );
 
     enabled =
         siteConfig.blackList && siteConfig.blackList.form && siteConfig.blackList.form.names

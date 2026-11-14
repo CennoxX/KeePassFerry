@@ -168,7 +168,7 @@
         "description": "Explains that the configuration settings might not be what the casual user expects"
     },
     "site_options_list_explain_desc": {
-        "message": "Passt ein Formular zu einer der Positivlisten, füllt KeePassFerry es immer aus. Passt es zu einer der Ausschlusslisten, füllt KeePassFerry es nie aus. Passt es zu beiden, wird es ebenfalls nicht ausgefüllt.",
+        "message": "Passt ein Formular zu einer der Ausschlusslisten, füllt KeePassFerry es nie aus.",
         "description": "Explains how KeePassFerry chooses which forms to fill in"
     },
     "pref_Finding_forms_heading": {
@@ -176,7 +176,7 @@
         "description": "Settings heading for how KeePassFerry finds forms it is (or isn't) interested in filling in with entries from the password manager"
     },
     "site_options_valid_form_intro_desc": {
-        "message": "KeePassFerry füllt passende KeePass-Einträge in alle Formulare ein, die ein Passwortfeld haben. Unten kannst du dieses Verhalten anpassen.",
+        "message": "KeePassFerry füllt passende KeePass-Einträge in Formulare mit Passwortfeld ein. Formulare ohne Passwortfeld füllt es aus, wenn ein Feld darin zu einem Formularfeld eines passenden Eintrags gehört (zum Beispiel zugeordnet mit „Dieses Feld zum Eintrag hinzufügen …“).",
         "description": "Explains how KeePassFerry chooses which forms to fill in"
     },
     "text_field_id": {
@@ -186,10 +186,6 @@
     "text_field_name": {
         "message": "Textfeld-Name",
         "description": ""
-    },
-    "white_list": {
-        "message": "Positivliste",
-        "description": "List of items that cause behaviour to be enabled if they match. For example, the list of names of form fields that force KeePassFerry to search for logins for the form containing that field."
     },
     "cancel": {
         "message": "Abbrechen",
