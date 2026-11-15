@@ -1992,6 +1992,30 @@
     "message": "These passwords appear in known data breaches. Change them on the website and enter the new password in the entry.",
     "description": "KeePassFerry"
   },
+  "ferry_news_1_0_38_1_title": {
+    "message": "Form fields from string fields",
+    "description": "KeePassFerry"
+  },
+  "ferry_news_1_0_38_1_text": {
+    "message": "In KeePass (entry → KeePassFerry → Form fields) you now choose under \"Value from\" where a field gets its value: user name, password or a string field of the entry. The popup shows each string field only once. Needs the new plugin.",
+    "description": "KeePassFerry"
+  },
+  "ferry_news_1_0_38_2_title": {
+    "message": "Fields without a password field",
+    "description": "KeePassFerry"
+  },
+  "ferry_news_1_0_38_2_text": {
+    "message": "A field you assign with \"Add this field to the entry …\" is now also filled in forms without a password field. The include list under \"Finding forms\" is no longer needed and has been removed.",
+    "description": "KeePassFerry"
+  },
+  "ferry_news_1_0_38_3_title": {
+    "message": "Order as in KeePass",
+    "description": "KeePassFerry"
+  },
+  "ferry_news_1_0_38_3_text": {
+    "message": "Entries and groups appear in the order they have in KeePass: for equally good matches, in the search and in the group picker. Needs the new plugin.",
+    "description": "KeePassFerry"
+  },
   "ferry_news_1_0_37_1_title": {
     "message": "Passkey: choose the group",
     "description": "KeePassFerry"

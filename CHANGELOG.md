@@ -2,6 +2,21 @@
 
 English · [Deutsch](#deutsch)
 
+## 1.0.38 – 2026-11-15
+
+- KeePass, entry dialog, tab "KeePassFerry" → "Form fields" (#46): a form field now takes its value from the entry.
+  "Value from" chooses the user name, the password, an existing string field or a new string field (created on the
+  "Advanced" tab). Fields added with "Add this field to the entry …" no longer show an empty value. The kind of field
+  follows the DOM type; type, page, DOM selector and the per-field placeholder option are no longer shown (stored
+  values are kept, placeholders are set per database). Form fields whose string field was deleted are marked, and
+  saving the entry asks whether to remove them. Every row has a tooltip. Needs the new plugin.
+- Popup: a string field that is used by a form field is shown once, with its name, among the fields to fill.
+- A field assigned to an entry is now also filled in forms without a password field (#47), in fields with the same id
+  or name only. The include list under "Finding forms" is no longer needed and has been removed; the exclude list stays.
+- Entries and groups keep the order stored in KeePass (#44): equally good matches for a page, the popup search (after
+  relevance) and the group lists. The change in 1.0.37 did not take effect. Needs the new plugin.
+- The German texts say "Stringfeld" as KeePass does (was "Zeichenfolge").
+
 ## 1.0.37 – 2026-11-14
 
 - Security: the in-page passkey dialog only accepts real input from the user. Before, a script on the page could
@@ -624,6 +639,25 @@ First release of KeePassFerry (fork of Kee 4.1 and KeePassRPC 2.0.2).
 ---
 
 # Deutsch
+
+## 1.0.38 – 2026-11-15
+
+- KeePass, Eintragsdialog, Reiter „KeePassFerry“ → „Formularfelder“ (#46): Ein Formularfeld bekommt seinen Wert jetzt
+  aus dem Eintrag. „Wert aus“ wählt Benutzername, Passwort, ein vorhandenes oder ein neues Stringfeld (angelegt im
+  Reiter „Erweitert“). Felder aus „Dieses Feld zum Eintrag hinzufügen …“ zeigen keinen leeren Wert mehr. Die Art des
+  Felds ergibt sich aus dem DOM-Typ; Typ, Seite, DOM-Selektor und die Platzhalter-Option je Feld werden nicht mehr
+  angezeigt (gespeicherte Werte bleiben, Platzhalter stellt man je Datenbank ein). Formularfelder, deren Stringfeld
+  gelöscht wurde, sind markiert, und beim Speichern des Eintrags wird gefragt, ob sie entfernt werden sollen. Jede
+  Zeile hat einen Tooltip. Dafür ist das neue Plugin nötig.
+- Popup: Ein Stringfeld, das ein Formularfeld nutzt, steht nur noch einmal da, mit seinem Namen bei den Feldern zum
+  Ausfüllen.
+- Ein einem Eintrag zugeordnetes Feld wird jetzt auch in Formularen ohne Passwortfeld ausgefüllt (#47), nur in Feldern
+  mit derselben ID oder demselben Namen. Die Positivliste unter „Formulare finden“ ist dafür nicht mehr nötig und
+  entfällt; die Ausschlussliste bleibt.
+- Einträge und Gruppen behalten die in KeePass gespeicherte Reihenfolge (#44): gleich gut passende Treffer einer
+  Seite, die Suche im Popup (nach der Relevanz) und die Gruppenlisten. Die Änderung in 1.0.37 hatte noch nicht
+  gewirkt. Dafür ist das neue Plugin nötig.
+- Die deutschen Texte sagen „Stringfeld“ wie KeePass (bisher „Zeichenfolge“).
 
 ## 1.0.37 – 2026-11-14
 

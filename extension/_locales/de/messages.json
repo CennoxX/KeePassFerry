@@ -1992,6 +1992,30 @@
         "message": "Diese Passwörter tauchen in bekannten Datenlecks auf. Ändere sie auf der Website und trage das neue Passwort im Eintrag ein.",
         "description": "KeePassFerry"
     },
+    "ferry_news_1_0_38_1_title": {
+        "message": "Formularfelder aus Stringfeldern",
+        "description": "KeePassFerry"
+    },
+    "ferry_news_1_0_38_1_text": {
+        "message": "In KeePass (Eintrag → KeePassFerry → Formularfelder) wählst du jetzt unter „Wert aus“, woher ein Feld seinen Wert bekommt: Benutzername, Passwort oder ein Stringfeld des Eintrags. Im Popup steht jedes Stringfeld nur noch einmal. Dafür ist das neue Plugin nötig.",
+        "description": "KeePassFerry"
+    },
+    "ferry_news_1_0_38_2_title": {
+        "message": "Felder ohne Passwortfeld",
+        "description": "KeePassFerry"
+    },
+    "ferry_news_1_0_38_2_text": {
+        "message": "Ein Feld, das du mit „Dieses Feld zum Eintrag hinzufügen …“ zuordnest, wird jetzt auch in Formularen ohne Passwortfeld ausgefüllt. Die Positivliste unter „Formulare finden“ ist dafür nicht mehr nötig und entfällt.",
+        "description": "KeePassFerry"
+    },
+    "ferry_news_1_0_38_3_title": {
+        "message": "Reihenfolge wie in KeePass",
+        "description": "KeePassFerry"
+    },
+    "ferry_news_1_0_38_3_text": {
+        "message": "Einträge und Gruppen erscheinen in der Reihenfolge, in der sie in KeePass stehen: bei gleich gut passenden Treffern, in der Suche und in der Gruppenauswahl. Dafür ist das neue Plugin nötig.",
+        "description": "KeePassFerry"
+    },
     "ferry_news_1_0_37_1_title": {
         "message": "Passkey: Gruppe wählen",
         "description": "KeePassFerry"
