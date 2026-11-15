@@ -21,14 +21,14 @@ Felder, deren Beschriftung auf SMS oder E-Mail hindeutet, werden ausgelassen (do
 
 const OTP_HINT =
     // eslint-disable-next-line @stylistic/max-len
-    /(one[-_ ]?time|\botp\b|\botc\b|totp|\b2fa\b|\bmfa\b|two[-_ ]?factor|2[-_ ]?step|zwei[-_ ]?faktor|verification[-_ ]?code|verify[-_ ]?code|bestätigungscode|bestaetigungscode|sicherheitscode|security[-_ ]?code|auth(entication|enticator)?[-_ ]?code|authenticator|einmal[-_ ]?(code|passwort|kennwort)|totp[-_ ]?code|otp[-_ ]?code|mfa[-_ ]?code|app[-_ ]?code)/i;
+    /(one[-_ ]?time|totp|(?<![a-z])(otp|otc|2fa|mfa)(?![a-z])|oath[-_ ]?token|two[-_ ]?factor|2[-_ ]?step|zwei[-_ ]?faktor|einmal[-_ ]?(code|(pass|kenn)wort)|((best(ä|ae)tigungs|sicherheits)|(verif(y|ication)|security|auth(entication)?|otp|mfa|app)[-_ ]?)code|authenticator)/i;
 // Kein TOTP: SMS/E-Mail/Telefon, Captcha, Wiederherstellungs- und Backup-Codes
 const NOT_TOTP_HINT =
     /(\bsms\b|e-?mail|text message|textnachricht|\bphone\b|telefonnummer|handynummer|captcha|recovery|backup|wiederherstellung|sicherungscode|notfallcode)/i;
 const TEXT_TYPES = ["text", "tel", "number", ""];
 
 // Allgemeine Feldnamen, die erst zusammen mit einem Zwei-Faktor-Kontext der Seite als OTP-Feld gelten
-const WEAK_HINT = /(\bcode\b|\bpin\b|\btoken\b)/i;
+const WEAK_HINT = /(?<![a-z])(code|pin|token)(?![a-z])/i;
 // Zwei-Faktor-Kontext im sichtbaren Text der Seite (Überschrift, Erklärung)
 const PAGE_2FA_CONTEXT =
     /(authenticator|authentifizierungs[-\s]?app|zwei[-\s]?(faktor|schritt)|two[-\s]?(factor|step)|2[-\s]?step|\b2fa\b|\bmfa\b|einmal[-\s]?(kennwort|passwort|code)|one[-\s]?time[-\s]?(code|password|passcode)|\botp\b|\btotp\b)/i;
