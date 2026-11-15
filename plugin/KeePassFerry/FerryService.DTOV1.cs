@@ -514,14 +514,10 @@ namespace KeePassFerry
 
                 if (fullDetails)
                 {
-                    allEntries.Sort(delegate(Entry e1, Entry e2) { return e1.Title.CompareTo(e2.Title); });
                     return allEntries.ToArray();
                 }
 
-                allLightEntries.Sort(delegate(LightEntry e1, LightEntry e2)
-                {
-                    return e1.Title.CompareTo(e2.Title);
-                });
+                // Reihenfolge wie in KeePass gespeichert, keine Sortierung nach Titel (#44)
                 return allLightEntries.ToArray();
             }
 
@@ -566,7 +562,7 @@ namespace KeePassFerry
                 allGroups.Add(kpg);
             }
 
-            allGroups.Sort(delegate(Group g1, Group g2) { return g1.Title.CompareTo(g2.Title); });
+            // Reihenfolge wie in KeePass gespeichert, keine Sortierung nach Titel (#44)
             return allGroups.ToArray();
         }
     }

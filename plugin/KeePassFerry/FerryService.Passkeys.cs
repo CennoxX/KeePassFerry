@@ -83,7 +83,8 @@ namespace KeePassFerry
                 }
             }
             // Passkey dieser RP zuerst
-            result.Sort((a, b) => b.rpMatch.CompareTo(a.rpMatch));
+            // Stabil: innerhalb gleicher Treffer die Reihenfolge aus KeePass (List.Sort wäre nicht stabil)
+            result = System.Linq.Enumerable.ToList(System.Linq.Enumerable.OrderByDescending(result, p => p.rpMatch));
             return result.ToArray();
         }
 

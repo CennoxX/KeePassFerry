@@ -789,7 +789,8 @@ namespace KeePassFerry
             santisedURLs.RemoveAll(u => u.StartsWith("data:"));
             var URLs = santisedURLs.ToArray();
 
-            if (count == 0 && URLs.Length > 0 && !string.IsNullOrEmpty(URLs[0]))
+            bool searchedUrls = count == 0 && URLs.Length > 0 && !string.IsNullOrEmpty(URLs[0]);
+            if (searchedUrls)
             {
                 Dictionary<string, URLSummary> URLHostnameAndPorts = new Dictionary<string, URLSummary>();
 
@@ -941,7 +942,10 @@ namespace KeePassFerry
                 }
             }
 
-            allEntries.Sort(delegate(Entry e1, Entry e2) { return e1.Title.CompareTo(e2.Title); });
+            // Freitextsuche: nach Titel. Treffer für eine Adresse bleiben in der Reihenfolge aus KeePass; die
+            // Erweiterung sortiert sie nur nach Relevanz, gleich gut passende behalten so die eigene Ordnung (#44)
+            if (!string.IsNullOrEmpty(freeTextSearch) && count > 0 && !searchedUrls)
+                allEntries.Sort(delegate(Entry e1, Entry e2) { return e1.Title.CompareTo(e2.Title); });
             return allEntries.ToArray();
         }
 
