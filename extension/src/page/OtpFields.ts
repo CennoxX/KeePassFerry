@@ -133,7 +133,7 @@ function diagScan(target: HTMLInputElement[] | null) {
 
 // Liefert entweder ein einzelnes Feld oder eine Gruppe von Einzelziffernfeldern.
 // allowFilled: auch schon ausgefüllte Felder (Knopf "in die Seite eintragen" im Popup)
-function findOtpTarget(allowFilled = false): HTMLInputElement[] | null {
+export function findOtpTarget(allowFilled = false): HTMLInputElement[] | null {
     const empty = (el: HTMLInputElement) => allowFilled || !el.value;
     const inputs = allInputs().filter(isEditable);
 
@@ -143,18 +143,25 @@ function findOtpTarget(allowFilled = false): HTMLInputElement[] | null {
     if (hinted.length >= 6 && hinted.length <= 8 && hinted.every(empty)) return hinted;
 
     // Einzelziffernfelder: maxlength=1 oder schmales Feld ohne Längenangabe (z. B. type=number),
-    // 6 bis 8 Stück auf gleicher Elternebene. Vor dem Einzelfeld prüfen, sonst gilt das erste Kästchen als Codefeld
+    // 6 bis 8 Stück direkt hintereinander (kein anderes sichtbares Feld dazwischen), egal wie tief verschachtelt:
+    // UI-Frameworks hüllen jedes Kästchen einzeln ein (MUI bei Autodesk, #48). Vor dem Einzelfeld prüfen,
+    // sonst gilt das erste Kästchen als Codefeld
     const isDigitBox = (el: HTMLInputElement) =>
         TEXT_TYPES.includes((el.getAttribute("type") ?? "").toLowerCase()) &&
         (el.maxLength === 1 || (el.maxLength <= 0 && el.offsetWidth > 0 && el.offsetWidth <= 64));
-    const byParent = new Map<Node, HTMLInputElement[]>();
-    for (const el of inputs.filter(isDigitBox)) {
-        const key = el.parentElement?.parentElement ?? el.parentElement;
-        if (!byParent.has(key)) byParent.set(key, []);
-        byParent.get(key).push(el);
+    const rows: HTMLInputElement[][] = [];
+    let row: HTMLInputElement[] = [];
+    for (const el of inputs) {
+        if (isDigitBox(el) && (row.length === 0 || el.getRootNode() === row[0].getRootNode())) {
+            row.push(el);
+            continue;
+        }
+        if (row.length) rows.push(row);
+        row = isDigitBox(el) ? [el] : [];
     }
+    if (row.length) rows.push(row);
     const grouped = new Set<HTMLInputElement>();
-    for (const group of byParent.values()) {
+    for (const group of rows) {
         if (group.length < 6 || group.length > 8) continue;
         group.forEach(el => grouped.add(el));
         if (NOT_TOTP_HINT.test(group.map(hintText).join(" "))) continue;

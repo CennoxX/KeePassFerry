@@ -2,12 +2,13 @@
 import { existsSync, readFileSync } from "fs";
 import { resolve } from "path";
 import { beforeAll, describe, expect, it, vi } from "vitest";
-import { isOtpField } from "../page/OtpFields";
+import { findOtpTarget, isOtpField } from "../page/OtpFields";
 import { isUsernameField } from "../page/loginFields";
 
 /*
 archivedPages.test.ts: Gegencheck der Felderkennung mit archivierten Problemseiten (seiten-analysen/faelle.json,
-nur lokal, nicht im Repo). Baut je Fall die Felder nach und prüft die Einordnung (code, benutzer, passwort, keins).
+nur lokal, nicht im Repo). Baut je Fall die Felder nach und prüft die Einordnung (code, benutzer, passwort, keins)
+und, falls angegeben, in welche Felder ein Einmalcode käme (codeziel, auch Ziffernkästchen).
 Ohne die Datei (z. B. im öffentlichen Repo oder in der CI) wird der Test übersprungen.
 */
 
@@ -19,11 +20,12 @@ interface Feld {
     placeholder?: string;
     maxlength?: number;
     inputmode?: string;
+    rahmen?: number;
     erwartet: "code" | "benutzer" | "passwort" | "keins";
 }
 
 const FILE = resolve(__dirname, "../../../seiten-analysen/faelle.json");
-const faelle: { seite: string; kontext2fa: boolean; formular: Feld[] }[] = existsSync(FILE)
+const faelle: { seite: string; kontext2fa: boolean; codeziel?: string[]; formular: Feld[] }[] = existsSync(FILE)
     ? JSON.parse(readFileSync(FILE, "utf-8")).faelle
     : [];
 
@@ -31,6 +33,8 @@ const faelle: { seite: string; kontext2fa: boolean; formular: Feld[] }[] = exist
 beforeAll(() => {
     Object.defineProperty(HTMLElement.prototype, "offsetWidth", { configurable: true, get: () => 200 });
     Object.defineProperty(HTMLElement.prototype, "offsetHeight", { configurable: true, get: () => 30 });
+    // Rechteck auf der Seite (jsdom liefert 0×0 bei 0,0, das gilt als außerhalb der Seite)
+    HTMLElement.prototype.getBoundingClientRect = () => ({ left: 10, top: 10, right: 210, bottom: 40, width: 200, height: 30, x: 10, y: 10, toJSON: () => ({}) });
 });
 
 function einordnen(el: HTMLInputElement): string {
@@ -67,11 +71,19 @@ describe.skipIf(faelle.length === 0)("Archivierte Problemseiten", () => {
                     label.textContent = f.label;
                     form.appendChild(label);
                 }
-                form.appendChild(el);
+                // Hüllen-<div> wie bei UI-Frameworks (MUI: InputBase → FormControl)
+                let node: HTMLElement = el;
+                for (let r = 0; r < (f.rahmen ?? 0); r++) {
+                    const div = document.createElement("div");
+                    div.appendChild(node);
+                    node = div;
+                }
+                form.appendChild(node);
                 return el;
             });
             const actual = inputs.map(einordnen);
             expect(actual).toEqual(fall.formular.map(f => f.erwartet));
+            if (fall.codeziel) expect((findOtpTarget() ?? []).map(el => el.name)).toEqual(fall.codeziel);
             vi.restoreAllMocks();
         });
     }
