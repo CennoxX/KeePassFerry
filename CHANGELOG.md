@@ -2,6 +2,11 @@
 
 English · [Deutsch](#deutsch)
 
+## Unreleased
+
+- More code fields are recognised by their name, for example `wpOATHToken` (Wikipedia), `app_otp` or `pin1` (#49, thanks
+  to CennoxX). General names such as `code` or `pin` still count only when the page talks about two-factor login.
+
 ## 1.0.39 – 2026-11-15
 
 - One-time codes in single-digit boxes are filled again when the page wraps every box in its own containers, as
@@ -645,6 +650,11 @@ First release of KeePassFerry (fork of Kee 4.1 and KeePassRPC 2.0.2).
 ---
 
 # Deutsch
+
+## Unveröffentlicht
+
+- Mehr Codefelder werden an ihrem Namen erkannt, z. B. `wpOATHToken` (Wikipedia), `app_otp` oder `pin1` (#49, danke an
+  CennoxX). Allgemeine Namen wie `code` oder `pin` zählen weiter nur, wenn die Seite von Zwei-Faktor-Anmeldung spricht.
 
 ## 1.0.39 – 2026-11-15
 
