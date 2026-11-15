@@ -2016,6 +2016,14 @@
     "message": "Entries and groups appear in the order they have in KeePass: for equally good matches, in the search and in the group picker. Needs the new plugin.",
     "description": "KeePassFerry"
   },
+  "ferry_news_1_0_39_1_title": {
+    "message": "One-time code in boxes",
+    "description": "KeePassFerry"
+  },
+  "ferry_news_1_0_39_1_text": {
+    "message": "When a page asks for the code in one box per digit, KeePassFerry now also fills it if the page wraps every box separately (for example Autodesk).",
+    "description": "KeePassFerry"
+  },
   "ferry_news_1_0_37_1_title": {
     "message": "Passkey: choose the group",
     "description": "KeePassFerry"

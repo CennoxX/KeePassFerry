@@ -2016,6 +2016,14 @@
         "message": "Einträge und Gruppen erscheinen in der Reihenfolge, in der sie in KeePass stehen: bei gleich gut passenden Treffern, in der Suche und in der Gruppenauswahl. Dafür ist das neue Plugin nötig.",
         "description": "KeePassFerry"
     },
+    "ferry_news_1_0_39_1_title": {
+        "message": "Einmalcode in Kästchen",
+        "description": "KeePassFerry"
+    },
+    "ferry_news_1_0_39_1_text": {
+        "message": "Steht der Code auf einer Seite in einzelnen Kästchen je Ziffer, trägt KeePassFerry ihn jetzt auch ein, wenn die Seite jedes Kästchen einzeln verpackt (z. B. Autodesk).",
+        "description": "KeePassFerry"
+    },
     "ferry_news_1_0_37_1_title": {
         "message": "Passkey: Gruppe wählen",
         "description": "KeePassFerry"

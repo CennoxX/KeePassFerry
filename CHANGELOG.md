@@ -2,6 +2,12 @@
 
 English · [Deutsch](#deutsch)
 
+## 1.0.39 – 2026-11-15
+
+- One-time codes in single-digit boxes are filled again when the page wraps every box in its own containers, as
+  UI frameworks such as MUI do (#48, Autodesk). Boxes that follow each other on the page now count as one code input,
+  however deeply they are nested.
+
 ## 1.0.38 – 2026-11-15
 
 - KeePass, entry dialog, tab "KeePassFerry" → "Form fields" (#46): a form field now takes its value from the entry.
@@ -639,6 +645,12 @@ First release of KeePassFerry (fork of Kee 4.1 and KeePassRPC 2.0.2).
 ---
 
 # Deutsch
+
+## 1.0.39 – 2026-11-15
+
+- Einmalcodes in Einzelziffern-Kästchen werden wieder eingetragen, wenn die Seite jedes Kästchen einzeln einhüllt, wie
+  es UI-Frameworks wie MUI tun (#48, Autodesk). Kästchen, die auf der Seite direkt aufeinander folgen, gelten jetzt
+  als ein Codefeld, egal wie tief sie verschachtelt sind.
 
 ## 1.0.38 – 2026-11-15
 
